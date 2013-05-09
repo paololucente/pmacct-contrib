@@ -1,0 +1,170 @@
+#!/bin/sh
+#
+# Copyright (C) 2008,2009 Karl O. Pinc <kop@meme.com>
+#   This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+# Use socat to "export" a remote pmacctd (pmacctd-net) memory plugin socket
+# to the local machine.
+#
+# Syntax:
+#   See usage below.
+#
+# Bugs:
+#  Requires one port on the server per exported socket.
+#
+
+# Constants
+export SOCKNAME_PREFIX=/tmp/pmacct.
+
+function usage {
+cat >&2 <<\EOF
+
+pmacct-netd -s|--server host -p|--port port
+            -U|--socket socket[-n|--nodaemon]
+pmacct-netd -h|--help
+pmacct-netd -v|--version
+
+-n|--nodaemon         Do not daemonize.
+-s|--server host      Host running pmacctd-netd.
+-p|--port port        Port on server.
+-U|--socket socket    Socket to export.
+-h|--help             Display this help.
+-v|--version          Display version number.
+EOF
+}
+
+# Initialize arguments
+export server=''
+export got_server=0
+export port=''
+export got_port=0
+export socket=''
+export got_socket=0
+export daemonize=1
+
+# Parse command line.
+
+while [ $# -ne 0 ] ; do
+
+  case "$1" in
+
+    -s|--server)
+      shift;
+      server="$1"
+      shift;
+      if [ $got_server -ne 0 ] ; then
+        echo "$0: $server: server already supplied" >&2
+        usage
+        exit 1
+      fi
+      got_server=1
+      ;;
+
+    -U|--socket)
+      shift;
+      socket="$1"
+      shift;
+      if [ $got_socket -ne 0 ] ; then
+        echo "$0: $socket: socket already supplied" >&2
+        usage
+        exit 1
+      fi
+      got_socket=1
+      ;;
+
+    -p|--port)
+      shift;
+      port="$1"
+      shift;
+      if [ $got_port -ne 0 ] ; then
+        echo "$0: $port: port already supplied" >&2
+        usage
+        exit 1
+      fi
+      got_port=1
+      ;;
+
+    -n|--nodaemon)
+      shift;
+      daemonize=0
+      ;;
+
+    -v|--version)
+      echo $VERSION
+      exit
+      ;;
+
+    -h|--help)
+      usage
+      exit
+      ;;
+
+    *)
+      echo "$0: $1: unknown option" >&2
+      usage
+      exit 1
+      ;;
+
+   esac
+done
+
+if [ -z "$server" ] ; then
+  echo "$0: A server must be supplied" >&2
+  usage
+  exit 1
+fi
+
+if [ -z "$socket" ] ; then
+  echo "$0: A socket must be supplied" >&2
+  usage
+  exit 1
+fi
+
+if [ -z "$port" ] ; then
+  echo "$0: A port must be supplied" >&2
+  usage
+  exit 1
+fi
+
+# Initialize
+sockfile="$(basename $socket)"
+export pidfile=/var/run/pmacct-netd.$sockfile.pid
+
+if [ $daemonize -eq 1 ] ; then
+  # Run our socat command as a daemon.
+  ( # Spawn a shell process to clean up the pidfile.
+
+    trap "rm -f $pidfile" EXIT
+
+    # Think about how to su this to something harmless.
+
+    # UNIX-LISTEN is supposed to be in the CHILD group and
+    # support fork, but seems to balk.  -g forces it.
+
+    socat -lydaemon \
+           -g \
+           -L/tmp/pmacct-netd.$sockfile.lock \
+           UNIX-LISTEN:$socket,fork \
+           TCP4:$server:$port,defer-accept \
+           &
+
+    pid=$!
+    echo $pid > $pidfile
+    wait ;# to erase the pidfile.
+
+    # Finish running in the background.
+  ) &
+
+else
+  # Just run the socat command.
+  exec socat \
+             -g \
+             -L/tmp/pmacct-netd.$sockfile.lock \
+             UNIX-LISTEN:$socket,fork \
+             TCP4:$server:$port,defer-accept
+fi
+
+        

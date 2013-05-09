@@ -1,0 +1,77 @@
+#!/bin/sh -e
+#
+# Original version by Robert Leslie
+# <rob@mars.org>, edited by iwj and cs
+# Modified for openvpn by Alberto Gonzalez Iniesta <agi@agi.as>
+# Modified for restarting / starting / stopping single tunnels by Richard Mueller <mueller@teamix.net>
+# modified for use with pmacct with multiple instances rsailer@4-ward.net
+
+test $DEBIAN_SCRIPT_DEBUG && set -v -x
+
+DAEMON=/usr/sbin/pmacctd
+CONFIG_DIR=/etc/pmacct
+test -x $DAEMON || exit 0
+test -d $CONFIG_DIR || exit 0
+
+start_pmacct () {
+    $DAEMON -F /var/run/pmacct.$NAME.pid \
+            -f $CONFIG_DIR/$NAME.conf  || echo -n " FAILED->"
+    echo -n " $NAME"
+}
+stop_pmacct () {
+   kill `cat $PIDFILE` || true
+  rm $PIDFILE
+}
+
+case "$1" in
+start)
+  echo -n "Starting pmacct:"
+
+  if test -z $2 ; then
+    for CONFIG in `cd $CONFIG_DIR; ls *.conf 2> /dev/null`; do
+      NAME=${CONFIG%%.conf}
+      start_pmacct
+    done
+  else
+    if test -e $CONFIG_DIR/$2.conf ; then
+      NAME=$2
+      start_pmacct
+    else
+      echo -n " No such ACCT: $2"
+    fi
+  fi
+  echo "."
+
+  ;;
+stop)
+  echo -n "Stopping pmacct:"
+
+  if test -z $2 ; then
+    for PIDFILE in `ls /var/run/pmacct.*.pid 2> /dev/null`; do
+      NAME=`echo $PIDFILE | cut -c17-`
+      NAME=${NAME%%.pid}
+      stop_pmacct
+      echo -n " $NAME"
+    done
+  else
+    if test -e /var/run/pmacct.$2.pid ; then
+      PIDFILE=`ls /var/run/pmacct.$2.pid 2> /dev/null`
+      NAME=`echo $PIDFILE | cut -c17-`
+      NAME=${NAME%%.pid}
+      stop_pmacct
+      echo -n " $NAME"
+    else
+      echo -n " No such ACCT: $2"
+    fi
+  fi
+  echo "."
+  ;;
+*)
+  echo "Usage: $0 {start|stop}" >&2
+  exit 1
+  ;;
+esac
+
+exit 0
+
+# vim:set ai et sts=2 sw=2 tw=0:

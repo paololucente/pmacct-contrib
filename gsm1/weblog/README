@@ -1,0 +1,49 @@
+PMACCT Weblog util 
+
+- This script lists the traffic gathered by pmacct, paging through the results, ordered by stamp_updated. 
+
+- It uses XTemplate, a powerful PHP template library. It`s included in this package, but you can get it at : http://sourceforge.net/projects/xtpl/. There is a copy of it included (see xtpl.p)
+
+- It uses too a small code snippet to help paging through the results, in a manner that you can navigate your data and avoid timeouts.
+
+- You can easily expand your acct tables, and change the sql query,  add a php xtpl->assign() line,  and a reference in template/traffic.html code to match your needs. Give it a a try.
+
+- Free to use, distribute, etc, etc in terms of LGPL or whatever free license you want. Refer to my website to more projects: http://videodog.cjb.net
+
+INSTALL:
+
+Configure pmacctd, and refer to the proper table.
+NOTE: your apache must have PHP enabled.
+NOTE 2: You might need to rename xtpl.p to xtpl.php ( and correct it in the proper require line inside ip_account.php), if your webserv give some error stating it couldn't find the file.
+
+Inside ip_account.php file you can tune:
+- Include PATHS
+- variable $rowsperpage, to setup how many lines you want, might be useful to mobile devices, or to avoid timeouts due to slow sql queries.
+
+- variable $resolvenames, set it to zero to disable name resolv, and 1 to resolve address/port/ service names
+
+
+Put these files in a folder under your htdocs. 
+
+dbconfig.inc
+ip_account.php  (main file)
+style.css
+pagedresults.php
+xtpl.p
+templates/ (folder containing template file traffic.html)
+
+Access like: http://webserver/ip_account.php
+
+Edit dbconfig.inc to the proper DB setting/location
+Change templates/traffic.html to suit your needs.
+
+Have fun !
+
+09/2004
+
+Gleicon S. Moraes
+gleicon [at] terra com br 
+http://videodog.cjb.net
+
+
+

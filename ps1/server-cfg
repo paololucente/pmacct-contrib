@@ -1,0 +1,127 @@
+#!@PERL@
+#
+# Copyright (C) 2005 Pedro Sanchez <pedro.sanchez@terra.com.ve>
+#
+# The structure of the library was originally based on MySQL benchmarks:
+# Copyright (C) 2000 MySQL AB & MySQL Finland AB & TCX DataKonsult AB
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public
+# License along with this library; if not, write to the Free
+# Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+# MA 02111-1307, USA
+#
+
+sub get_server
+{
+  my ($name, $host, $database)=@_;
+  my ($server);
+
+  if ($name =~ /mysql/i)
+  { $server = new db_MySQL($host, $database); }
+  elsif ($name =~ /pgsql/i)
+  { $server = new db_Pg($host, $database); }
+  else
+  { die "Unknown sql server name used: $name\nUse either mysql or pgsql\n"; }
+
+  return $server;
+}
+
+package db_MySQL;
+
+sub new
+{
+  my ($type,$host,$database)= @_;
+  my $self= {};
+  my %limits;
+  bless $self;
+
+  $self->{'cmp_name'}           = "mysql";
+  if ( length($host) )
+  {
+    $self->{'data_source'}        = "DBI:mysql:database=$database;host=$host";
+  }
+  else
+  {
+    $self->{'data_source'}        = "DBI:mysql:database=$database";
+  }
+
+  return $self;
+}
+
+sub connect
+{
+  my ($self)=@_;
+  my ($dbh);
+  $dbh=DBI->connect($self->{'data_source'}, $main::opt_user, $main::opt_password,{ PrintError => 0})
+  || die "Got error: '$DBI::errstr' when connecting to " . $self->{'data_source'} ." with user: '$main::opt_user'\n";
+
+  $dbh->do("SET OPTION LOG_OFF=1,UPDATE_LOG=0");
+  return $dbh;
+}
+
+sub query 
+{
+  my($self,$sql) = @_;
+  return $sql;
+}
+
+sub abort_if_fatal_error
+{
+  return 0;
+}
+
+
+package db_Pg;
+
+sub new
+{
+  my ($type,$host,$database)= @_;
+  my $self= {};
+  bless $self;
+
+  $self->{'cmp_name'}           = "pg";
+  if ( length($host) )
+  {
+    $self->{'data_source'}        = "DBI:Pg:dbname=$database;host=$host";
+  }
+  else 
+  {
+    $self->{'data_source'}        = "DBI:Pg:dbname=$database";
+  }
+
+  return $self;
+}
+
+sub connect
+{
+  my ($self)=@_;
+  my ($dbh);
+
+  $dbh=DBI->connect($self->{'data_source'}, $main::opt_user, $main::opt_password,{ PrintError => 0 })
+  || die "Got error: '$DBI::errstr' when connecting to " . $self->{'data_source'} ." with user: '$main::opt_user'\n";
+
+  return $dbh;
+}
+
+sub query 
+{
+  my($self,$sql) = @_;
+  return $sql;
+}
+
+sub abort_if_fatal_error
+{
+  return 0;
+}
+
+1;

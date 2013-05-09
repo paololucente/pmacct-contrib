@@ -1,0 +1,14 @@
+# Defaults for pmacct initscript
+# sourced by /etc/init.d/pmacct
+# installed at /etc/default/pmacct by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# location of the configuration file
+#PMACCTD_CONF=/etc/pmacct
+CONFIG_DIR=/etc/pmacct
+
+# Additional options that are passed to pmacctd
+DAEMON_OPTS=""

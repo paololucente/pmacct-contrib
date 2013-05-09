@@ -1,0 +1,5 @@
+The pmacct scripts suite -- INSTALL file.
+Just type 'make' in the root directory of the package. Once '.pl' scripts
+are successfully created (configured) you can manually move them to your
+preferred installation path: 'mv *.pl <install dir>'.
+

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+PMLOGDIR=/var/log/pmacctd
+
+if [ ! -d ${PMLOGDIR} ]; then
+        mkdir -p ${PMLOGDIR}
+fi
+
+exec multilog t n20 s10000000 ${PMLOGDIR}

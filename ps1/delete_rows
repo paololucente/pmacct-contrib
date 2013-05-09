@@ -1,0 +1,86 @@
+#!@PERL@
+#
+# Copyright (C) 2005 Pedro Sanchez <pedro.sanchez@terra.com.ve>
+#
+# The structure of the library was originally based on MySQL benchmarks:
+# Copyright (C) 2000 MySQL AB & MySQL Finland AB & TCX DataKonsult AB
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public
+# License along with this library; if not, write to the Free
+# Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+# MA 02111-1307, USA
+#
+
+use Cwd;
+use DBI;
+
+$pwd = cwd(); $pwd = "." if ($pwd eq '');
+require "$pwd/script-lib.pl" || die "Can't read Configuration file: $!\n";
+
+$dbh = $server->connect();
+lock_table($dbh, $opt_server, $opt_table) if ($opt_lock);
+
+$query = "DELETE "; 
+$query = handle_from($query, $opt_table);
+$query = handle_cond($query, $opt_cond);
+$query = handle_order($query, $opt_order);
+$query = handle_limit($query, $opt_limit);
+delete_rows($dbh, $query);
+
+unlock_table($dbh, $opt_server) if ($opt_lock);
+$dbh->disconnect;
+
+sub usage 
+{
+  print <<EOF;
+The pmacct scripts v$version
+
+$0 takes the following options:
+
+--database (Default: $opt_database)
+  In which database the tables are located.
+
+--help
+  Shows this help
+
+--host='host name' (Default: $opt_host)
+  Host name where the database server is located.
+
+--server='server name' (Default: $opt_server)
+  Specify the SQL server: mysql or pgsql.
+
+--user='user name' (Default: $opt_user)
+  User name to log into the SQL server.
+
+--password='password' (Default: $opt_password)
+  Password for the specified user name.
+
+--table='table' (Default: $opt_table)
+  Which table to use for selection.
+
+--order='ordering field' (MySQL only)
+  Select the ordering field: bytes, flows or packets.
+
+--limit='rows number' (MySQL only)
+  Limit the evaluation to just the first 'rows number' rows.
+
+--cond='condition' (Default: none)
+  A list of optional conditions to match (WHERE clause).
+
+--lock
+  Enable table locking.
+
+
+EOF
+  exit(0);
+}

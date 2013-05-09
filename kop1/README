@@ -1,0 +1,8 @@
+There are 2 separate projects here.
+
+pmacct-netd/pmacctd-netd   Beta quality or better.
+                           Export memory plugin sockets across the net.
+
+pmacct2rrd.py              Ugly.  Alpha code.  Works for me.
+                           Feed pmacct data to rrdtool every second.
+

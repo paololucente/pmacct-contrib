@@ -1,0 +1,38 @@
+PMACCTd - Daemontools run scripts
+
+These scripts will help if you intend to run pmacctd under daemontools.
+
+REQUIREMENTS:
+
+1. pmacctd must be configured to NOT run as a daemon.  This is the 
+	default, but can be forced by setting daemonize: false in your 
+	pmacctd.conf.
+
+2. Daemontools should be configured and running.  You can obtain it from
+	http://cr.yp.to/daemontools.html along with documentation.  This
+	is beyond the scope of this README.
+
+3. (optional) I like to have the debug info at my fingertips as long as
+	it doesn't interfere with the running process, so I also set the 
+	debug: directive to true in pmacctd.conf.  The ./log/run script
+	already causes daemontools to send all output from pmacctd to 
+	multilog which writes it /var/log/pmacct/current.  Multilog
+	handles log rotation for you.  See the docs on multilog for more
+	details.
+
+USE:	If you followed the instructions with daemontools, your services tree 
+is /services/*.  To use pmacctd with daemontools, simply copy the pmacctd 
+directory from here to /services.  That's it... svscan should pick up the
+addition and start the service for you. `ps -e f` under Linux will give you a
+nice looking process tree:
+
+19195 ?        S      0:00 /bin/sh /command/svscanboot
+19200 ?        S      0:00  \_ svscan /service
+19204 ?        S      0:00  |   \_ supervise pmacct
+ 6183 ?        S      7:29  |   |   \_ pmacctd: Core Process [default]
+ 6187 ?        S      0:42  |   |       \_ pmacctd: MySQL Plugin [default]
+19246 ?        S      0:00  |   \_ supervise log
+19247 ?        S     28:28  |       \_ multilog t n20 s10000000 /var/log/pmacct
+19201 ?        S      0:00  \_ readproctitle service errors: ..................
+
+Enjoy...

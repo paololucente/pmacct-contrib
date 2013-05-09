@@ -1,0 +1,178 @@
+#!/bin/sh
+#
+# Copyright (C) 2008,2009 Karl O. Pinc <kop@meme.com>
+#   This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+# Use socat to link the pmacctd unix socket with
+# a remote pmacct client.
+#
+# Syntax:
+#  See usage function below.
+#
+# Remarks:
+#   Requires a VPN or a separate physical network for network
+# security.
+#
+# Bugs:
+# - Can't be secured on the client.  Local users could talk straight
+#   to the server.
+# - Requires one port on the server per exported socket.
+#
+
+# Constants
+export sip=192.168.1.1  ;# Where server listens.
+export VERSION=0.1
+export SOCKPATH=/tmp/collect.pipe
+
+function usage {
+cat >&2 <<EOF
+
+pmacctd-netd [-b|--bind bind] [-d|--daemon]
+              -p|--port port -U|--socket socket
+pmacctd-netd -h|--help
+pmacctd-netd -v|--version
+
+-b|--bind bindaddr    IPv4 Address to bind to.
+                      Omitting binds to all available addresses.
+-n|--nodaemon         Do not daemonize.
+-p|--port port        Port to listen on.
+-U|--socket socket    Path to socket to export over the net.
+-h|--help             Display this help.
+-v|--version          Display version number.
+EOF
+}
+
+# Initialize arguments
+export got_socket=0
+export socket=$SOCKPATH
+export got_port=0
+export port=''
+export got_bindaddr=0
+export bindaddr=''
+export daemonize=1
+
+# Parse command line.
+
+while [ $# -ne 0 ] ; do
+
+  case "$1" in
+
+    -U|--socket)
+      shift;
+      socket="$1"
+      shift;
+      if [ $got_socket -ne 0 ] ; then
+        echo "$0: $socket: socket path already supplied" >&2
+        usage
+      fi
+      got_bindaddr=1
+      ;;
+
+    -b|--bind)
+      shift;
+      bindaddr="$1"
+      shift;
+      if [ $got_bindaddr -ne 0 ] ; then
+        echo "$0: $bindaddr: bind address already supplied" >&2
+        usage
+      fi
+      got_bindaddr=1
+      ;;
+
+    -p|--port)
+      shift;
+      port="$1"
+      shift;
+      if [ $got_port -ne 0 ] ; then
+        echo "$0: $port: port already supplied" >&2
+        usage
+      fi
+      got_bindaddr=1
+      ;;
+
+    -n|--nodaemon)
+      shift;
+      daemonize=0
+      ;;
+
+    -v|--version)
+      echo $VERSION
+      exit
+      ;;
+
+    -h|--help)
+      usage
+      exit
+      ;;
+
+    *)
+      echo "$0: $1: unknown option" >&2
+      usage
+      exit 1
+      ;;
+
+   esac
+done
+
+# Check arguments
+
+if [ -z "$port" ] ; then
+  echo "$0: A port must be supplied" >&2
+  usage
+  exit 2
+fi
+
+if [ -z "$socket" ] ; then
+  echo "$0: A socket path must be supplied" >&2
+  usage
+  exit 2
+fi
+
+if [ -z "$bindaddr" ] ; then
+  bindarg=''
+else
+  bindarg=",bind=$bindaddr"
+fi
+
+# Initialize
+sockfile="$(basename $socket)"
+
+export pidfile=/var/run/pmacctd-netd.$sockfile.pid
+
+if [ $daemonize -eq 1 ] ; then
+  # Run our socat command as a daemon.
+  ( # Spawn a shell process to clean up the pidfile.
+
+    trap "rm -f $pidfile" EXIT
+
+    # Think about how to su this to something harmless.
+
+    # Run socat as a daemon.
+    # Think about how to su this to something harmless.
+
+    # Connect to the UNIX socket after listening.
+    socat -lmdaemon \
+          -L/tmp/pmacctd-netd.$sockfile.lock \
+          TCP4-LISTEN:$port${bindarg},fork \
+          UNIX-CONNECT:$socket \
+          &
+
+    pid=$!
+    echo $pid > $pidfile
+    wait ;# to erase the pid file.
+
+    # Finish running in the background.
+  ) &
+
+else
+  # Just run the socat command.
+  exec socat \
+            -L/tmp/pmacctd-netd.$sockfile.lock \
+            TCP4-LISTEN:$port${bindarg},fork \
+            UNIX-CONNECT:$socket
+fi
+
+

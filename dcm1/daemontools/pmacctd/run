@@ -1,0 +1,7 @@
+#!/bin/sh
+exec 2>&1
+
+# Set this to the root of your pmacct install
+PMPATH=/usr/local/pmacct
+
+exec $PMPATH/sbin/pmacctd -f $PMPATH/etc/pmacctd.conf

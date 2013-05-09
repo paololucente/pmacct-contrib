@@ -1,0 +1,42 @@
+The pmacct scripts suite -- README file. 
+
+INTRODUCTION.
+This package is a collection of scripts aimed to find, extract and show meaningful
+informations from the MySQL/PostgreSQL database where network data are collected by
+pmacct. The scripts are based on a common library that effectively make them work
+in conjunction with both MySQL and PostgreSQL. 
+
+To be aware of the commandline options, type '<script> --help'.  
+The scripts actually available are: 
+
+top_talkers:	     shows the flows that have collected the largest number of either
+		     bytes, packets or flows. It allows to limit the output to just
+		     the first N results, place conditions and table locking. 
+
+threshold_talkers:   shows the flows that match the supplied threshold. It allows also 
+		     to limit the output to just the first N results, place conditions
+		     and table locking.
+
+delete_rows:	     deletes rows from the database. It allows to place conditions to
+		     restrict the set of rows to delete. It also sports table locking
+		     and transactions support where available.
+
+REMARKS.
+When placing conditions and setting thresholds, remember to reason in terms of fields
+of the SQL table. At the actual development stage, the script API is unable to hide
+the database syntax peculiarities. However the unique option to be sensible to such
+behaviour should be the '--cond' one. Let follow some examples:
+
+a) We wish to see the top-10 talkers for the network 192.168.0.0/24 in a table that
+   might contain entries from other networks:
+   
+   top_talkers.pl --server=pgsql --table=big_talkers --limit=10 --cond="ip_src << '192.168.0.0/24'"
+   top_talkers.pl --server=mysql --table=big_talkers --limit=10 --cond="ip_src LIKE '192.168.0%'"
+   top_talkers.pl --server=mysql --table=big_talkers --limit=10 --cond="ip_src > '192.168.0.0' AND ip_src < '192.168.0.255'"
+
+b) We wish to see the top-10 talkers at 2005-05-25 16:30:00 :
+
+   top_talkers.pl --server=pgsql --table=acct_v4 --limit=10 --cond="stamp_inserted = '2005-05-25 16:30:00'"
+   top_talkers.pl --server=mysql --table=acct_v4 --limit=10 --cond="stamp_inserted = '2005-05-25 16:30:00'"
+
+

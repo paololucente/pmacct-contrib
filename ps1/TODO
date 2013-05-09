@@ -1,0 +1,6 @@
+  
+  ! Hide MySQL/PostgreSQL specific syntax in --cond option. Efforts
+    should be spent in making the condition syntax close to that of
+    a BPF filter.
+  + (Of course) Add new and useful scripts to the suite.
+

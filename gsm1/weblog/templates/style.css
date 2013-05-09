@@ -1,0 +1,153 @@
+
+body {
+font: 100% verdana, arial, sans-serif;
+background-color: #fff;
+margin: 10px;
+}
+
+#Content {
+	position:absolute;
+	left:50%;
+	width:500px;
+	margin-top:50px;
+	margin-left:-266px;
+	padding:15px;
+	border:1px dashed #333;
+	background-color:#eee;
+}
+
+#Content-mapa {
+	position:absolute;
+	left:50%;
+	width:640;
+	margin-top:20px;
+	margin-left:-366px;
+	padding:15px;
+	border:1px dashed #333;
+	background-color:#eee;
+}
+
+#Estante {
+	position:absolute;
+	right:1%;
+	width:180;
+	height:530;
+	margin-top:20px;
+	margin-right:20px;
+	border:1px dashed #333;
+	background-color:#eee;
+}
+
+a:link {
+	text-decoration:none;
+	color:#09c;
+	font-size:13px;
+	font-family : Verdana;
+}
+
+a:visited {
+	text-decoration:none;
+	color:#07c;
+	font-size:13px;
+	font-family : Verdana;
+}
+
+a:hover {
+	text-decoration:none;
+	color:#03c;
+	font-size:13px;
+	font-family : Verdana;
+}
+
+h1 {
+	font-family : Verdana;
+	margin:0px 0px 15px 0px;
+	padding:0px;
+	font-size:28px;
+	line-height:28px;
+	font-weight:900;
+	color:#9cc;
+}
+
+h2 {
+	font-family : Verdana;
+	font-size:16px;
+	color:#07c;
+}
+
+h3 {
+	font-family : Verdana;
+	font-size:14px;
+	font-weight:900;
+	color:#09c;
+	margin:0px 0px 1px 0px
+}
+
+
+td.oie  {
+	font-family : Verdana;
+	font-size : 12pt;
+	color:#436976;
+}
+
+td.doie  {
+	font-family : Verdana;
+	font-size : 12pt;
+	color:#FF6976;
+}
+
+.doie  {
+	font-family : Verdana;
+	font-size : 12pt;
+	color:#FF6976;
+}
+.oie  {
+	font-family : Verdana;
+	font-size : 12pt;
+	color:#436976;
+}
+
+.azulea {
+	color:#09C;
+	font-size:13px;
+	font-family: Verdana;
+}
+p  {
+	font-family : Verdana;
+	font-size : 12pt;
+	color:#436976;
+}
+
+
+input  {
+	font-family : Verdana;
+	font-size : 9pt;
+	border-color : #137BF9;
+	border-style : solid;
+	border-width : 1px;
+	background:#EEEEEE;
+	color:#436976;
+}
+
+select {
+    font-family: Verdana;
+    font-size : 9pt;
+    color:#436976;
+    border: 1px solid #137BF9;
+    background:#EEEEEE;
+}   
+	   
+textarea {
+	color: #436976;
+	font-family : Verdana;
+        font-size : 9pt;
+	background-color: #EEEEEE;
+	border: 1px solid #137BF9;
+}   
+
+table.ex {
+	color:#000000;
+	background-color:#f1f1f1;
+	font: 11px verdana, arial, sans-serif;
+}
+

@@ -1,0 +1,5 @@
+0.1 -- late May 2005
+  + Initial release which features top_talkers, threshold_talkers and
+    delete_rows scripts. Support for PostgreSQL transactions, locks
+    and fetch-then-delete operations. 
+

@@ -1,0 +1,275 @@
+#!@PERL@
+#
+# Copyright (C) 2005 Pedro Sanchez <pedro.sanchez@terra.com.ve>
+#
+# The structure of the library was originally based on MySQL benchmarks:
+# Copyright (C) 2000 MySQL AB & MySQL Finland AB & TCX DataKonsult AB
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public
+# License along with this library; if not, write to the Free
+# Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+# MA 02111-1307, USA
+#
+
+$version="0.1";
+use Getopt::Long;
+
+require "$pwd/server-cfg.pl" || die "Can't read Configuration file: $!\n";
+
+# Don't buffer output
+$|=1;
+
+$opt_help=0;
+$opt_limit=0 if not defined $opt_limit;
+$opt_delete=0;
+$opt_lock=0;
+$opt_table="acct";
+# $opt_host="localhost";
+$opt_host="";
+$opt_database="pmacct";
+$opt_user="pmacct"; 
+$opt_password="arealsmartpwd";
+$opt_server="mysql";
+$opt_order="" if not defined $opt_order;
+$opt_select="*" if not defined $opt_select;
+$opt_cond="" if not defined $opt_cond;
+
+GetOptions("user=s","host=s","database=s","password=s","table=s","server=s","limit:i","order:s","select:s","cond:s","delete","lock","help") || usage();
+usage() if ($opt_help);
+
+$server=get_server($opt_server,$opt_host,$opt_database);
+
+
+sub do_many
+{
+  my ($dbh,@statements)=@_;
+  my ($statement,$sth);
+
+  foreach $statement (@statements)
+  {
+    if (!($sth=$dbh->do($statement)))
+    {
+      die "Can't execute command '$statement'\nError: $DBI::errstr\n";
+    }
+  }
+}
+
+sub delete_rows
+{
+  my ($dbh,$query)=@_;
+  my $sth;
+
+  if (!($sth= $dbh->prepare($query)))
+  {
+    die "Error occured with prepare($query)\n -> $DBI::errstr\n";
+    return undef;
+  }
+
+  if (!$sth->execute)
+  {
+    die "Error occured with execute($query)\n -> $DBI::errstr\n";
+    $sth->finish;
+    return undef;
+  }
+
+  $sth->finish;
+  undef($sth);
+}
+
+sub fetch_all_rows
+{
+  my ($dbh,$query)=@_;
+  my ($sth,$length,$index,$i);
+  my (@results,@longest);
+  my $count=0;
+
+  if (!($sth= $dbh->prepare($query)))
+  {
+    die "Error occured with prepare($query)\n -> $DBI::errstr\n";
+    return undef;
+  }
+
+  if (!$sth->execute)
+  {
+    die "Error occured with execute($query)\n -> $DBI::errstr\n";
+    $sth->finish;
+    return undef;
+  }
+
+  # Query meta-data: column names
+  $row = $sth->{NAME}; 
+  for ($index = 0; $index <= $#$row; $index++)
+  {
+    $results[$count][$index] = $row->[$index];
+    $length = length($row->[$index]); 
+    $longest[$index] = $length if ($length > $longest[$index]);
+  }
+  $count++;
+
+
+  while ($row = $sth->fetchrow_arrayref)
+  {
+    for ($index = 0; $index <= $#$row; $index++)
+    {
+      $results[$count][$index] = $row->[$index];
+      $length = length($row->[$index]);
+      $longest[$index] = $length if ($length > $longest[$index]);
+    }
+    $count++;
+  }
+
+
+  for ($index = 0; $index < $count; $index++)
+  {
+    for ($i = 0; $i <= $#longest; $i++)
+    {
+      printf "%-".($longest[$i]+2)."s", $results[$index][$i]; 
+    }
+    print "\n";
+  }
+
+  $sth->finish;
+  undef($sth);
+}
+
+sub do_query
+{
+  my($dbh,$query)=@_;
+  $dbh->do($query) or
+    die "\nError executing '$query':\n$DBI::errstr\n";
+}
+
+sub handle_limit
+{
+  my($query,$limit)=@_;
+
+  if ($limit > 0) {
+    $query .= " LIMIT " . $limit;   
+  }
+
+  return $query;
+}
+
+sub handle_order
+{
+  my($query,$order)=@_;
+  if ( length($order) )
+  {
+    $query .= " ORDER BY " . $order . " DESC"; 
+  }
+
+  return $query;
+}
+
+sub handle_select
+{
+  my($query,$select)=@_;
+  $query .= "SELECT " . $select;
+
+  return $query;
+}
+
+sub handle_from
+{
+  my($query,$from)=@_;
+  $query .= " FROM " . $from;
+
+  return $query;
+}
+
+sub handle_cond
+{
+  my($query,$cond)=@_;
+  
+  if ( length($cond) )
+  {
+    $query .= " WHERE " . $cond;
+  }
+
+  return $query;
+}
+
+sub lock_table
+{
+  my($dbh,$server,$table)=@_;
+  my ($sth,$query);
+
+  if ($server =~ /mysql/i)
+  {
+    $query = "LOCK TABLES " . $table . " WRITE";
+  }
+  elsif ($server =~ /pgsql/i)
+  {
+    $dbh->begin_work;
+    $query = "LOCK " . $table . " IN EXCLUSIVE MODE";
+  }
+  
+  if (!($sth= $dbh->prepare($query)))
+  {
+    die "Error occured with prepare($query)\n -> $DBI::errstr\n";
+    return undef;
+  }
+
+  if (!$sth->execute)
+  {
+    die "Error occured with execute($query)\n -> $DBI::errstr\n";
+    $sth->finish;
+    return undef;
+  }
+
+  $sth->finish;
+  undef($sth);
+}
+
+sub unlock_table
+{
+  my($dbh,$server)=@_;
+  my ($sth,$query);
+
+  if ($server =~ /pgsql/i)
+  {
+    $dbh->commit;
+    warn "Transaction aborted because $@" if ($@);
+  }
+  elsif ($server =~ /mysql/i)
+  {
+    $query = "UNLOCK TABLES"; 
+
+    if (!($sth= $dbh->prepare($query)))
+    {
+      die "Error occured with prepare($query)\n -> $DBI::errstr\n";
+      return undef;
+    }
+
+    if (!$sth->execute)
+    {
+      die "Error occured with execute($query)\n -> $DBI::errstr\n";
+      $sth->finish;
+      return undef;
+    }
+
+    $sth->finish;
+    undef($sth);
+  }
+}
+
+sub select_to_delete
+{
+  my($query)=@_;
+
+  $query =~ s/^.*FROM/DELETE FROM/;
+
+  return $query;
+}
+
+1;

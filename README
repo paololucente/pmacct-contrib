@@ -1,0 +1,103 @@
+=[ Introduction ]=
+pmacct is a set of network tools to gather, filter and tag IP traffic; it is
+able to store collected data either into a DB or a memory table.
+We see any monitoring, billing or accounting environment as a stack where data
+are picked from the network, get processed in a meaningful way, and optionally
+formatted to be user-friendly. In the context of this layered approach we also
+see pmacct residing at its lowest layer (that is, just upon the network); once
+collected, often data need to be pulled to upper layers of the environment for
+a range of applications like time-based reporting, pricing model application, 
+policy enforcement, network thresholds handling, nice output to end-users.
+pmacct-contribs aims to be over the time a collection, though still absolutely
+not exaustive, of works revolved around or topped over pmacct.
+
+A personal and genuine 'thank you' goes to all people listed below. I really
+appreciate and recognize them for their enthusiastic efforts. Paolo. 
+
+
+=[ Contributors ]= 
+
+dcm1  = David C. Maple
+gsm1  = Gleicon S. Moraes 
+kop1  = Karl O. Pinc
+ps1   = Pedro Sanchez
+rs1   = Robert Sailer
+st1   = Stig Thormodsrud
+wk1   = Wim Kerkhoff
+
+
+=[ Tree of contributions ]=
+
+ |
+ `--- dcm1 
+ |        `--- daemontools 
+ |
+ `--- gsm1 
+ |        `--- weblog
+ |
+ `--- kop1
+ |       `--- pmacct-socat
+ |       `--- pmacct2rrd
+ |
+ `--- rs1
+ |       `--- showTraffic
+ |       `--- rc
+ |
+ `--- st1
+ |       `--- quagga_gen_as_network.pl 
+ |
+ `--- wk1
+ |       `--- check-sniff.sh
+ |       `--- check-running.pl
+ |
+ `--- ps1
+         `--- <pmacct scripts suite>
+
+
+=[ Description of contributions ]=
+
+- dcm1/daemontools
+These scripts will help if you intend to run pmacctd under daemontools. They
+should apply without troubles to nfacctd and sfacctd aswell. Further details
+about daemontools are at the folowing URL: http://cr.yp.to/daemontools.html 
+
+- gsm1/weblog
+This script lists the traffic gathered by pmacct, paging through the results,
+ordered by stamp_updated. It uses XTemplate, a powerful PHP template library,
+already included into the package.  
+
+- kop1/pmacct-socat
+A client-server couple of scripts, exports memory plugin UNIX sockets across
+the net to allow remote queries.
+
+- kop1/pmacct2rrd
+It's a script to feed pmacct data to RRDtool at fixed time intervals. Written
+in Python.
+
+- ps1/<pmacct scripts suite>
+This package is a collection of scripts aimed to find, extract and show meaningful
+informations from the MySQL/PostgreSQL database where network data are collected
+by pmacct. The scripts are based on a common library that effectively make them
+work in conjunction with both MySQL and PostgreSQL.
+
+- rs1/showTraffic
+showTraffic generates reports for data written by pmacct into a database like
+MySQL. It could either show all traffic by interface in and out or traffic at
+a list of ports for one interface. 
+
+- rs1/rc
+rc script modified for use with pmacct; it allows to start multiple instances
+of pmacctd reading configuration files from a specified directory. 
+
+- wk1/check-running.pl
+This script can be added as a service check in Nagios to ensure that pmacct is
+counting traffic properly. The SQL part is written for PostgreSQL but could
+easily be tweaked to run with MySQL. 
+
+- wk1/check-sniff.sh
+Checks that the sniffing interface is still up, in promiscuous mode, and has the
+correct speed/duplex settings.  
+
+- st1/quagga_gen_as_network.pl
+A script to generate a AS number/network file (networks_file) in pmacct format
+from Quagga 

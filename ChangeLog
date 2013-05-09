@@ -1,0 +1,26 @@
+=[ pmacct-contribs ChangeLog ]=
+
+20091125
+  + (st1) quagga_gen_as_network.pl: a script to generate a AS number/
+    network file (networks_file) in pmacct format from Quagga.
+
+20090314
+  + (kop1) pmacct-socat: made of a client-server couple of scripts,
+    exports memory plugin UNIX sockets across the net to allow remote
+    queries.
+  + (kop1) pmacct2rrd is a script to feed pmacct data to RRDtool at
+    fixed time intervals. Written in Python.
+
+20051103
+  + (dcm1) A small set of scripts that will help to run pmacctd under
+    daemontools (http://cr.yp.to/daemontools.html). They should apply
+    without troubles to nfacctd and sfacctd aswell. 
+
+20050531
+  + (ps1) pmacct scripts suite v0.1: Initial release which features
+    top_talkers, threshold_talkers and delete_rows scripts. Support
+    for PostgreSQL transactions, locks and fetch-then-delete operations.
+
+20040908
+  + Initial release
+
