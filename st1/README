@@ -1,0 +1,9 @@
+This script generates the networks_file that pmacct uses so it can integrate
+ as numbers into the flows even when there's no active BGP session in the
+ system
+
+This system works by converting the output of sh ip bpg (either from quagga
+ or from cisco) to the pmacct format.
+
+Quagga:
+  vtysh -c "sh ip sum" | perl quagga_gen_as_network.pl
