@@ -7,5 +7,3 @@ This system works by converting the output of sh ip bpg (either from quagga
 
 Quagga:
   vtysh -c "sh ip sum" | perl quagga_gen_as_network.pl
-
-
