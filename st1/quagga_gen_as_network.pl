@@ -95,7 +95,6 @@ while ($line = get_line()) {
 	    } elsif (($first_oct >= 192) && ($first_oct <= 223)) {
 		$network .= '/24';
 	    }
-            print "network $network $first_oct doesn't have a / \n";
         }
 	my $path;
 	# networks over 15 characters have the rest of the info
