@@ -84,6 +84,19 @@ while ($line = get_line()) {
 	    print "skipping default route\n";
 	    next;
 	}
+	#By default the output is using classful network numbering, hence ommitting the bitmask
+	# we have to restore them to be used in pmacct
+        if ($network !~ /\//) {
+	    my ($first_oct) = ($network =~ /^([0-9]+)\.[0-9]+\.[0-9]+\.[0-9]+/);
+	    if (($first_oct >= 0) && ($first_oct <= 127)) {
+		$network .= '/8';
+	    } elsif (($first_oct >= 128) && ($first_oct <= 191)) {
+		$network .= '/16';
+	    } elsif (($first_oct >= 192) && ($first_oct <= 223)) {
+		$network .= '/24';
+	    }
+            print "network $network $first_oct doesn't have a / \n";
+        }
 	my $path;
 	# networks over 15 characters have the rest of the info
 	# on the next line
