@@ -1,3 +1,5 @@
+### General information
+
 This script generates the networks_file that pmacct uses so it can integrate
  as numbers into the flows even when there's no active BGP session in the
  system
@@ -5,5 +7,29 @@ This script generates the networks_file that pmacct uses so it can integrate
 This system works by converting the output of sh ip bpg (either from quagga
  or from cisco) to the pmacct format.
 
+### Usage
+
 Quagga:
   vtysh -c "sh ip sum" | perl quagga_gen_as_network.pl
+
+
+### Choosing the output format
+
+By default the output is in the format accepted by 0.14.3 and newer
+ which adds nexthop information into the dump
+!
+!<next-hop>,<origin AS number>,<Network>/<numeric mask>
+!
+10.0.0.1,65500,192.168.1.0/24
+10.0.0.2,65501,192.168.2.0/25
+10.0.0.3,65502,192.168.4.0/23
+
+If you still want to use the old format without nexthop, you will have to
+ set the variable $disable_nexthop to 1
+!
+! <origin AS number>,<Network>/<numeric mask> 
+!
+65500,192.168.1.0/24
+65501,192.168.2.0/25
+65502,192.168.4.0/23
+
