@@ -24,7 +24,7 @@
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
-# Date: November 2009
+# Date: July 2013
 # Description: Script generate as/network file from quagga
 # 
 # **** End License ****
@@ -38,6 +38,7 @@ use strict;
 use warnings;
 
 my $outfile = '/etc/pmacct/networks.lst';
+my $disable_nexthop = 0;
 
 my $line;
 my $line_num = 0;
@@ -119,7 +120,11 @@ while ($line = get_line()) {
 		print "\tline $line_num\n";
 	    } 
 	    $networks_hash{$network} = $last_as;
-	    print $fd "$last_as,$network\n";
+	    if ($disable_nexthop) {
+		    print $fd "$last_as,$network\n";
+	    } else {
+		    print $fd "$nexthop,$last_as,$network\n";
+	    }
 	}
     } 
 }
