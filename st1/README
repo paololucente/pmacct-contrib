@@ -10,7 +10,7 @@ This system works by converting the output of sh ip bpg (either from quagga
 ### Usage
 
 Quagga:
-  vtysh -c "sh ip sum" | perl quagga_gen_as_network.pl
+  vtysh -c "sh ip bgp" | perl quagga_gen_as_network.pl
 
 
 ### Choosing the output format
